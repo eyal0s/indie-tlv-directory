@@ -6,14 +6,25 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+
+const categories = [
+  "מעצב/ת",
+  "מפתח/ת",
+  "מנהל/ת מוצר",
+  "שיווק",
+  "רו״ח",
+  "אחר"
+]
 
 export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
   const [formData, setFormData] = useState({
     name: '',
+    category: '',
+    customCategory: '',
     email: '',
     phone: '',
     website: '',
-    category: '',
     description: '',
   })
 
@@ -23,10 +34,11 @@ export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
       alert('שם וקטגוריה הם שדות חובה')
       return
     }
+    const finalCategory = formData.category === 'אחר' ? formData.customCategory : formData.category
     await fetch('/api/providers', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData)
+      body: JSON.stringify({ ...formData, category: finalCategory })
     })
     onAddProvider()
     onClose()
@@ -52,15 +64,33 @@ export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
           </div>
           <div>
             <Label htmlFor="category">קטגוריה *</Label>
-            <Input
-              id="category"
-              placeholder="קטגוריה"
+            <Select
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-              required
-              className="text-right"
-            />
+              onValueChange={(value) => setFormData({ ...formData, category: value })}
+            >
+              <SelectTrigger className="text-right">
+                <SelectValue placeholder="בחר קטגוריה" />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((category) => (
+                  <SelectItem key={category} value={category}>{category}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
+          {formData.category === 'אחר' && (
+            <div>
+              <Label htmlFor="customCategory">קטגוריה מותאמת אישית *</Label>
+              <Input
+                id="customCategory"
+                placeholder="הזן קטגוריה מותאמת אישית"
+                value={formData.customCategory}
+                onChange={(e) => setFormData({ ...formData, customCategory: e.target.value })}
+                required
+                className="text-right"
+              />
+            </div>
+          )}
           <div>
             <Label htmlFor="email">אימייל</Label>
             <Input
@@ -102,7 +132,7 @@ export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
               className="text-right"
             />
           </div>
-          <Button type="submit">שגר</Button>
+          <Button type="submit">הוסף ספק</Button>
         </form>
       </DialogContent>
     </Dialog>

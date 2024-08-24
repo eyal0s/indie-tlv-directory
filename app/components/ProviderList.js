@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import AddProviderModal from '@/components/AddProviderModal'
-import { Search, PlusIcon } from 'lucide-react'
+import { Search,PlusIcon } from 'lucide-react'
+
+const categoryColors = {
+  "מעצב/ת": "bg-blue-100 text-blue-800",
+  "מפתח/ת": "bg-green-100 text-green-800",
+  "מנהל/ת מוצר": "bg-purple-100 text-purple-800",
+  "שיווק": "bg-yellow-100 text-yellow-800",
+  "רו״ח": "bg-yellow-100 text-yellow-800",
+  "אחר": "bg-gray-100 text-gray-800"
+}
 
 export default function ProviderList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -57,6 +66,10 @@ export default function ProviderList() {
     provider.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
+  const getCategoryColor = (category) => {
+    return categoryColors[category] || categoryColors["אחר"]
+  }
+
   return (
     <>
       <div className="flex flex-row-reverse justify-between items-center mb-4">
@@ -64,7 +77,7 @@ export default function ProviderList() {
           <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
           <Input
             type="text"
-            placeholder="חיפוש ספקים..."
+            placeholder="חיפוש..."
             className="pr-8 text-right"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -80,7 +93,7 @@ export default function ProviderList() {
           <TableRow>
             <TableHead className="text-right">שם</TableHead>
             <TableHead className="text-right">קטגוריה</TableHead>
-            <TableHead className="text-right">איש קשר</TableHead>
+            <TableHead className="text-right">אימייל</TableHead>
             <TableHead className="text-right">פעולות</TableHead>
           </TableRow>
         </TableHeader>
@@ -88,7 +101,11 @@ export default function ProviderList() {
           {filteredProviders.map((provider) => (
             <TableRow key={provider._id}>
               <TableCell className="text-right">{provider.name}</TableCell>
-              <TableCell className="text-right">{provider.category}</TableCell>
+              <TableCell className="text-right">
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getCategoryColor(provider.category)}`}>
+                  {provider.category}
+                </span>
+              </TableCell>
               <TableCell className="text-right">{provider.email}</TableCell>
               <TableCell className="text-right">
                 <Button 
