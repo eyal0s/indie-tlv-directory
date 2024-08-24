@@ -48,7 +48,7 @@ export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="text-right">
         <DialogHeader>
-          <DialogTitle>הוסף ספק שירות חדש</DialogTitle>
+          <DialogTitle>הוסף מומלץ חדש</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -132,7 +132,7 @@ export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
               className="text-right"
             />
           </div>
-          <Button type="submit">הוסף ספק</Button>
+          <Button type="submit">הוסף</Button>
         </form>
       </DialogContent>
     </Dialog>

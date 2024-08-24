@@ -4,16 +4,17 @@ import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import AddProviderModal from '@/components/AddProviderModal'
-import { Search,PlusIcon } from 'lucide-react'
+import { Search, PlusIcon } from 'lucide-react'
 
 const categoryColors = {
-  "מעצב/ת": "bg-blue-100 text-blue-800",
-  "מפתח/ת": "bg-green-100 text-green-800",
-  "מנהל/ת מוצר": "bg-purple-100 text-purple-800",
-  "שיווק": "bg-yellow-100 text-yellow-800",
-  "רו״ח": "bg-yellow-100 text-yellow-800",
-  "אחר": "bg-gray-100 text-gray-800"
+  "מעצב/ת": { color: "bg-blue-100 text-blue-800", emoji: "🎨" },
+  "מפתח/ת": { color: "bg-green-100 text-green-800", emoji: "💻" },
+  "מנהל/ת מוצר": { color: "bg-purple-100 text-purple-800", emoji: "📊" },
+  "שיווק": { color: "bg-yellow-100 text-yellow-800", emoji: "📢" },
+  "רו״ח": { color: "bg-red-100 text-red-800", emoji: "💵" },
+  "אחר": { color: "bg-gray-100 text-gray-800", emoji: "🔧" }
 }
 
 export default function ProviderList() {
@@ -66,12 +67,17 @@ export default function ProviderList() {
     provider.category.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const getCategoryColor = (category) => {
+  const getCategoryInfo = (category) => {
     return categoryColors[category] || categoryColors["אחר"]
   }
 
+  const truncateText = (text, maxLength) => {
+    if (text.length <= maxLength) return text;
+    return text.substr(0, maxLength) + '...';
+  }
+
   return (
-    <>
+    <TooltipProvider>
       <div className="flex flex-row-reverse justify-between items-center mb-4">
         <div className="relative">
           <Search className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -93,7 +99,8 @@ export default function ProviderList() {
           <TableRow>
             <TableHead className="text-right">שם</TableHead>
             <TableHead className="text-right">קטגוריה</TableHead>
-            <TableHead className="text-right">אימייל</TableHead>
+            <TableHead className="text-right">טלפון</TableHead>
+            <TableHead className="text-right">תיאור</TableHead>
             <TableHead className="text-right">פעולות</TableHead>
           </TableRow>
         </TableHeader>
@@ -102,11 +109,21 @@ export default function ProviderList() {
             <TableRow key={provider._id}>
               <TableCell className="text-right">{provider.name}</TableCell>
               <TableCell className="text-right">
-                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getCategoryColor(provider.category)}`}>
-                  {provider.category}
+                <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getCategoryInfo(provider.category).color}`}>
+                  {getCategoryInfo(provider.category).emoji} {provider.category}
                 </span>
               </TableCell>
-              <TableCell className="text-right">{provider.email}</TableCell>
+              <TableCell className="text-right">{provider.phone}</TableCell>
+              <TableCell className="text-right">
+                <Tooltip>
+                  <TooltipTrigger>
+                    {truncateText(provider.description, 100)}
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-sm">
+                    <p>{provider.description}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TableCell>
               <TableCell className="text-right">
                 <Button 
                   variant="outline" 
@@ -127,6 +144,6 @@ export default function ProviderList() {
         onClose={() => setIsModalOpen(false)} 
         onAddProvider={handleAddProvider} 
       />
-    </>
+    </TooltipProvider>
   )
 }
