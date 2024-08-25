@@ -26,6 +26,7 @@ export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
     phone: '',
     website: '',
     description: '',
+    recommend_by: '',
   })
 
   const handleSubmit = async (e) => {
@@ -129,6 +130,16 @@ export default function AddProviderModal({ isOpen, onClose, onAddProvider }) {
               placeholder="תיאור"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              className="text-right"
+            />
+          </div>
+          <div>
+            <Label htmlFor="recommend_by">ממליץ</Label>
+            <Input
+              id="recommend_by"
+              placeholder="שם הממליץ"
+              value={formData.recommend_by}
+              onChange={(e) => setFormData({ ...formData, recommend_by: e.target.value })}
               className="text-right"
             />
           </div>

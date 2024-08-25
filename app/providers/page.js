@@ -29,7 +29,7 @@ export default function ProvidersPage() {
           >
             GitHub Repository
           </a>
-          {' '} שלנו 🌈
+          {' '} 🌈
         </p>
       </footer>
     </main>

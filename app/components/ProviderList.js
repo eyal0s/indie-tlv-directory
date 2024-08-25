@@ -1,20 +1,20 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import AddProviderModal from '@/components/AddProviderModal'
-import { Search, PlusIcon, Phone } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { Search, Phone, PlusIcon } from 'lucide-react'
 
 const categoryColors = {
   "מעצב/ת": { color: "bg-blue-100 text-blue-800", emoji: "🎨" },
   "מפתח/ת": { color: "bg-green-100 text-green-800", emoji: "💻" },
   "מנהל/ת מוצר": { color: "bg-purple-100 text-purple-800", emoji: "📊" },
   "שיווק": { color: "bg-yellow-100 text-yellow-800", emoji: "📢" },
-  "רו״ח": { color: "bg-red-100 text-red-800", emoji: "💵" },
+  "רו״ח": { color: "bg-red-100 text-red-800", emoji: "🧮" },
   "אחר": { color: "bg-gray-100 text-gray-800", emoji: "🔧" }
 }
 
@@ -102,6 +102,11 @@ export default function ProviderList() {
     return categoryColors[category] || categoryColors["אחר"]
   }
 
+  const truncateText = (text, maxLength) => {
+    if (text.length <= maxLength) return text;
+    return text.substr(0, maxLength) + '...';
+  }
+
   if (isLoading) {
     return <div>טוען...</div>
   }
@@ -131,7 +136,8 @@ export default function ProviderList() {
             <TableHead className="text-right">קטגוריה</TableHead>
             <TableHead className="text-right">טלפון</TableHead>
             <TableHead className="text-right">תיאור</TableHead>
-            <TableHead className="text-right">פעולות</TableHead>
+            <TableHead className="text-right">ממליץ</TableHead>
+            {/* <TableHead className="text-right">פעולות</TableHead> */}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -152,20 +158,21 @@ export default function ProviderList() {
                   dir="ltr"
                 >
                   <Phone className="w-4 h-4 mr-1" />
-                  {formatPhoneNumber(provider.phone)}
+                  {provider.phone}
                 </a>
               </TableCell>
               <TableCell className="text-right">
                 <Tooltip>
                   <TooltipTrigger>
-                    {provider.description}
+                    {truncateText(provider.description, 100)}
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-sm">
                     <p>{provider.description}</p>
                   </TooltipContent>
                 </Tooltip>
               </TableCell>
-              <TableCell className="text-right">
+              <TableCell className="text-right">{provider.recommended_by}</TableCell>
+              {/* <TableCell className="text-right">
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -174,7 +181,7 @@ export default function ProviderList() {
                 >
                   {upvotedProviders[provider._id] ? 'הצבעת' : '👍 +1'} ({provider.upvotes})
                 </Button>
-              </TableCell>
+              </TableCell> */}
             </TableRow>
           ))}
         </TableBody>
