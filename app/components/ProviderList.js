@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import AddProviderModal from '@/components/AddProviderModal'
-import { Search, PlusIcon } from 'lucide-react'
+import { Search, PlusIcon, Phone } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const categoryColors = {
   "מעצב/ת": { color: "bg-blue-100 text-blue-800", emoji: "🎨" },
@@ -17,63 +18,92 @@ const categoryColors = {
   "אחר": { color: "bg-gray-100 text-gray-800", emoji: "🔧" }
 }
 
+const formatPhoneNumber = (phoneNumber) => {
+  // Remove non-digit characters
+  const cleaned = ('' + phoneNumber).replace(/\D/g, '')
+  
+  // Format the number
+  return `0${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5)}`
+}
+
+const getWhatsAppLink = (phoneNumber) => {
+  // Remove non-digit characters and ensure it starts with country code
+  const cleaned = ('' + phoneNumber).replace(/\D/g, '')
+  const withCountryCode = cleaned.startsWith('972') ? cleaned : `972${cleaned.slice(1)}`
+  return `https://wa.me/${withCountryCode}`
+}
+
 export default function ProviderList() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [providers, setProviders] = useState([])
   const [upvotedProviders, setUpvotedProviders] = useState({})
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
-    fetchProviders()
-    // Load upvoted providers from local storage
-    const storedUpvotes = JSON.parse(localStorage.getItem('upvotedProviders') || '{}')
-    setUpvotedProviders(storedUpvotes)
-  }, [])
+    const fetchProviders = async () => {
+      try {
+        const isAuthorized = localStorage.getItem('isAuthorized')
+        if (!isAuthorized) {
+          router.push('/gate')
+          return
+        }
 
-  const fetchProviders = async () => {
-    const response = await fetch('/api/providers')
-    const data = await response.json()
-    setProviders(data)
-  }
-
-  const handleUpvote = async (id) => {
-    if (upvotedProviders[id]) {
-      // Provider already upvoted in this session
-      return
+        const response = await fetch('/api/providers')
+        if (response.status === 401) {
+          localStorage.removeItem('isAuthorized')
+          router.push('/gate')
+          return
+        }
+        const data = await response.json()
+        setProviders(data)
+      } catch (error) {
+        console.error('Error fetching providers:', error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    await fetch('/api/providers', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id })
-    })
-    
-    // Update local state
-    const updatedUpvotes = { ...upvotedProviders, [id]: true }
-    setUpvotedProviders(updatedUpvotes)
-    
-    // Save to local storage
-    localStorage.setItem('upvotedProviders', JSON.stringify(updatedUpvotes))
-    
     fetchProviders()
+  }, [router])
+
+  const handleUpvote = async (id) => {
+    if (upvotedProviders[id]) return
+
+    try {
+      const response = await fetch('/api/providers', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      })
+      if (response.ok) {
+        setProviders(providers.map(p => 
+          p._id === id ? { ...p, upvotes: p.upvotes + 1 } : p
+        ))
+        setUpvotedProviders({ ...upvotedProviders, [id]: true })
+      }
+    } catch (error) {
+      console.error('Error upvoting provider:', error)
+    }
   }
 
-  const handleAddProvider = () => {
-    fetchProviders()
+  const handleAddProvider = (newProvider) => {
+    setProviders([...providers, newProvider])
   }
 
   const filteredProviders = providers.filter(provider =>
     provider.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    provider.category.toLowerCase().includes(searchTerm.toLowerCase())
+    provider.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    provider.description.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const getCategoryInfo = (category) => {
     return categoryColors[category] || categoryColors["אחר"]
   }
 
-  const truncateText = (text, maxLength) => {
-    if (text.length <= maxLength) return text;
-    return text.substr(0, maxLength) + '...';
+  if (isLoading) {
+    return <div>טוען...</div>
   }
 
   return (
@@ -113,11 +143,22 @@ export default function ProviderList() {
                   {getCategoryInfo(provider.category).emoji} {provider.category}
                 </span>
               </TableCell>
-              <TableCell className="text-right">{provider.phone}</TableCell>
+              <TableCell className="text-left">
+                <a 
+                  href={getWhatsAppLink(provider.phone)} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center hover:text-green-600 transition-colors"
+                  dir="ltr"
+                >
+                  <Phone className="w-4 h-4 mr-1" />
+                  {formatPhoneNumber(provider.phone)}
+                </a>
+              </TableCell>
               <TableCell className="text-right">
                 <Tooltip>
                   <TooltipTrigger>
-                    {truncateText(provider.description, 100)}
+                    {provider.description}
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-sm">
                     <p>{provider.description}</p>

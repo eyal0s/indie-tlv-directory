@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { headers } from 'next/headers'
 import connectDB from '@/lib/connectDB'
 import Provider from '@/models/Provider'
 

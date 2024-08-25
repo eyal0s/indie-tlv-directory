@@ -8,6 +8,7 @@ const ProviderSchema = new mongoose.Schema({
   socialLinks: String,
   category: String,
   description: String,
+  recommend_by: String,
   upvotes: { type: Number, default: 0 },
 })
 
